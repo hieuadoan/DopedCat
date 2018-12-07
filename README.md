@@ -1,2 +1,2 @@
 # DopedCat
-Doped surface generation for heterogeneous catalyst (based on CatKit and ASE)
+Python code for doped surface generation for heterogeneous catalyst based on CatKit and ASE
