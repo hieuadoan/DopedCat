@@ -1,2 +1,2 @@
 # DopedCat
-Python code for doped surface generation for heterogeneous catalyst based on CatKit and Atomic Simulation Environment
+Python code for doped surface generation for heterogeneous catalyst based on CatKit and Atomic Simulation Environment.
