@@ -6,16 +6,33 @@ from copy import copy
 from ase.utils import natural_cutoffs
 from ase.neighborlist import NeighborList
 
-def OverlappedAtoms(atoms,mult=0.9,skin=0.):
+def OffsetAdatoms(atoms,tol=1.):
+    """ Check for off surface adatoms"""
+    z_sum = 0
+    offsetIdList = []
+    tagList = atoms.get_tags()
+    dopantList = [i for i,tag in enumerate(tagList) if tag==0] 
+      
+    for i in dopantList:
+        z_sum += atoms[i].position[2]     
+    avg_z = z_sum/len(dopantList)
+    for i in dopantList:
+        offset = atoms[i].position[2] - avg_z
+        if offset > tol:
+            offsetIdList.append(i)
+    return offsetIdList
+
+def OverlappedAdatoms(atoms,mult=0.9,skin=0.):
+    """ Check for overlapped dopants """
     nc = natural_cutoffs(atoms,mult=mult)
     nl = NeighborList(nc,skin=skin,self_interaction=False,bothways=False)
     nl.update(atoms)
-    indicesList = []
+    overlappedIdList = []
     for i, atom in enumerate(atoms):
         indices, offset = nl.get_neighbors(i)
         if indices.size!=0:
-            indicesList.append(indices.tolist())
-    return indicesList 
+            overlappedIdList.append(indices.tolist())
+    return overlappedIdList 
 
 def doped_surface(slabGratoms,dopantString,dopantType='add',ini_surf_atoms=None):
     """ Add dopants to surface"""
@@ -29,29 +46,41 @@ def doped_surface(slabGratoms,dopantString,dopantType='add',ini_surf_atoms=None)
     builder = Builder(slabGratoms)
     if dopantType=='add':
         overlappedList = []
+        offsetList = []
         fin_slabs = builder.add_adsorbate(dopant, bonds=[0], index=-1)
         for i, fin_slab in enumerate(fin_slabs):
-            overlapped = OverlappedAtoms(fin_slab)
+            overlapped = OverlappedAdatoms(fin_slab) # Check for ovelapped adatoms
+            offset = OffsetAdatoms(fin_slab) # Check for off surface adatoms
             if overlapped:
-                overlappedList.append(i) 
+                overlappedList.append(i)
+            if offset:
+                offsetList.append(i) 
             new_surf_atoms = copy(surf_atoms)
-            new_surf_atoms.append(new_surf_atoms[-1]+1) # Dopant becomes a surface atom
-            fin_slabs[i].set_surface_atoms(new_surf_atoms)
-        
-        for i in reversed(overlappedList):
-            del(fin_slabs[i])
+            new_surf_atoms.append(new_surf_atoms[-1]+1) # Add dopant to list of surface atoms
+            fin_slabs[i].set_surface_atoms(new_surf_atoms)  
+            
+            tagList = fin_slab.get_tags()
+            tagList[-1]=0   # Set tag of dopant to 0
+            fin_slabs[i].set_tags(tagList)
+
+        delList = overlappedList + offsetList
+        delList = list(set(delList))
+        delList.sort()
+        if delList:
+            for i in reversed(delList):        
+                del(fin_slabs[i])                   #Remove sturctures with overlapped dopants
 
     elif dopantType=='replace':
         sys.exit('Working on this')
     else:
         sys.exit('Dopant type has to be either \'add\' or \'replace\'. Please choose one!')
-
+    
+   
     return(fin_slabs)
 
 
 """
-TODO: - Remove overlapped atoms configs
-      - Doped surface by replacement 
+TODO:  - Doped surface by replacement 
 """
 
 
