@@ -42,6 +42,7 @@ def doped_surface(slabGratoms,dopantString,dopantType='add',ini_surf_atoms=None)
         slabGratoms.set_surface_atoms(ini_surf_atoms)
 
     surf_atoms = slabGratoms.get_surface_atoms().tolist()
+
     builder = Builder(slabGratoms)
     if dopantType=='add':
         overlappedList = []
