@@ -1,8 +1,8 @@
 import sys
 from catkit import Gratoms
-from catkit.build import molecule 
+from catkit.build import molecule
 from catkit.gen.adsorption import Builder
-from copy import copy
+from copy import copy, deepcopy
 from ase.utils import natural_cutoffs
 from ase.neighborlist import NeighborList
 
@@ -31,7 +31,7 @@ def overlappedAdatoms(atoms,mult=0.9,skin=0.):
         indices, offset = nl.get_neighbors(i)
         if indices.size!=0:
             overlappedIdList.append(indices.tolist())
-    return overlappedIdList 
+    return overlappedIdList
 
 def doped_surface(slabGratoms,dopantString,dopantType='add',ini_surf_atoms=None):
     """ Add dopants to surface"""
@@ -54,7 +54,7 @@ def doped_surface(slabGratoms,dopantString,dopantType='add',ini_surf_atoms=None)
             if overlapped:
                 overlappedList.append(i)
             if offset:
-                offsetList.append(i) 
+                offsetList.append(i)
             new_surf_atoms = copy(surf_atoms)
             new_surf_atoms.append(new_surf_atoms[-1]+1) # Add dopant to list of surface atoms
             fin_slabs[i].set_surface_atoms(new_surf_atoms)
@@ -69,16 +69,14 @@ def doped_surface(slabGratoms,dopantString,dopantType='add',ini_surf_atoms=None)
         if delList:
             for i in reversed(delList):
                 del(fin_slabs[i])                   #Remove sturctures with overlapped dopants
-
     elif dopantType=='replace':
-        sys.exit('Working on this')
+        fin_slabs=[]
+        for i in surf_atoms:
+            tempGratoms  = deepcopy(slabGratoms)
+            if slabGratoms[i].symbol != dopantString:
+                tempGratoms[i].symbol = dopantString
+                fin_slabs.append(tempGratoms)
     else:
         sys.exit('Dopant type has to be either \'add\' or \'replace\'. Please choose one!')
-
     return(fin_slabs)
-
-
-"""
-TODO:  - Doped surface by replacement 
-"""
 
