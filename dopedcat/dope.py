@@ -64,6 +64,10 @@ def doped_surface(slabGratoms,dopantString,dopantType='add',ini_surf_atoms=None)
             fin_slabs[i].set_tags(tagList)
 
         delList = overlappedList + offsetList
+        print('Surfaces with overlapped dopants: ')
+        print(overlappedList)
+        print('Surface with offset atom(s):')
+        print(offsetList)
         delList = list(set(delList))
         delList.sort()
         if delList:
