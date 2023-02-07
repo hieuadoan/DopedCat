@@ -3,7 +3,7 @@ from catkit import Gratoms
 from catkit.build import molecule
 from catkit.gen.adsorption import Builder
 from copy import copy, deepcopy
-from ase.utils import natural_cutoffs
+from ase.neighborlist import natural_cutoffs
 from ase.neighborlist import NeighborList
 
 def offsetAdatoms(atoms,tol=1.):
